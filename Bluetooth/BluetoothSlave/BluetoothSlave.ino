@@ -10,7 +10,7 @@ void setup(){
 void loop(){
 
   int t = 3;
-  int l = 5;
+  int  l = 5;
   
   COM.write("t");
   COM.write(t);
