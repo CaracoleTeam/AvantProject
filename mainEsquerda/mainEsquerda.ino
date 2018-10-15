@@ -1,7 +1,9 @@
 #include <AltSoftSerial.h>
 #include <Wire.h>
+#include <SoftwareSerial.h>
 
-AltSoftSerial BTserial; 
+SoftwareSerial COM(9,10);
+
 
 
 //Variables
@@ -17,7 +19,7 @@ int passada = 0;
 
 void setup() {
   Wire.begin();                           //begin the wire comunication
-  
+  COM.begin(9600);
   Wire.beginTransmission(0x68);           //begin, Send the slave adress (in this case 68)              
   Wire.write(0x6B);                       //make the reset (place a 0 into the 6B register)
   Wire.write(0x00);
@@ -30,7 +32,7 @@ void setup() {
 
   Serial.begin(9600);                     //Remember to set this same baud rate to the serial monitor  
 
-  BTserial.begin(9600);
+  
 
 /*Here we calculate the acc data error before we start the loop
  * I make the mean of 200 values, that should be enough*/
@@ -102,10 +104,13 @@ void loop() {
  //Serial.print("   |   ");
  //Serial.print("AccZ raw: ");
 
+  long int    lastDebounceTime = millis();
   
   
-  
-  
+  if((lastDebounceTime - startTemp) > 10000){
+        startTemp = lastDebounceTime;
+        
+    }
  
  if(Acc_rawZ>0){
   dandoPassada = true;
@@ -117,25 +122,29 @@ void loop() {
 
  if((Acc_rawZ >0.9) ){
     steps++;
-   
-   
+    passada = lastDebounceTime - startTemp;
+    startTemp = lastDebounceTime;
+    int finalPassada= passada/10/10;
 
     
-    
-    
-    
+    //para debug
+    Serial.print("Tempo: ");
+    Serial.print(passada);
     Serial.print("Passos: ");
     Serial.print(steps);
-
-    if (steps!=10 & steps!=13 ) 
-        {   
-         
-
-             
-             
-        }
+     Serial.print(" Passada a ser enviada: ");
+     Serial.print(finalPassada);
+     Serial.print("\n");
     
-    Serial.print("\n");
+   
+
+     
+     char bufToSend[40];
+    String string = (String)"p"+(String)"E"+(String)"t"+finalPassada+(String)"l"+60 ;
+    string.toCharArray(bufToSend,40);
+    Serial.print(bufToSend);
+    COM.write(bufToSend);
+    
     delay(350);
  }
   

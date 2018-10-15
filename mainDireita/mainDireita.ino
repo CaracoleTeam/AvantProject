@@ -1,6 +1,13 @@
 #include <AltSoftSerial.h>
 #include <Wire.h>
+#include <SoftwareSerial.h>
 
+typedef struct passo{
+    int stepTime;
+    int stepLenght;
+}Passo;
+
+SoftwareSerial COM(10,11);
 AltSoftSerial BTserial; 
 
 
@@ -42,7 +49,7 @@ void setup() {
       Wire.write(0x3B);                       //Ask for the 0x3B register- correspond to AcX
       Wire.endTransmission(false);
       Wire.requestFrom(0x68,6,true); 
-      
+      COM.begin(9600); 
       Acc_rawX=(Wire.read()<<8|Wire.read())/4096.0 ; //each value needs two registres
       Acc_rawY=(Wire.read()<<8|Wire.read())/4096.0 ;
       Acc_rawZ=(Wire.read()<<8|Wire.read())/4096.0 ;
@@ -102,10 +109,13 @@ void loop() {
  //Serial.print("   |   ");
  //Serial.print("AccZ raw: ");
 
+  long int    lastDebounceTime = millis();
   
   
-  
-  
+  if((lastDebounceTime - startTemp) > 10000){
+        startTemp = lastDebounceTime;
+        
+    }
  
  if(Acc_rawZ>0){
   dandoPassada = true;
@@ -113,29 +123,46 @@ void loop() {
   dandoPassada = false;
  }
 
- 
+ int leftNumberOfBytes = COM.available();
+ if(leftNumberOfBytes==8){
+  char data[leftNumberOfBytes];
+  for(int i = 0; i <leftNumberOfBytes;i++){
+    data[i] = COM.read();
+  }
+    Serial.println(data);
 
+    
+    BTserial.write(data);
+    delay(350);
+  }
+
+  
  if((Acc_rawZ >0.9) ){
     steps++;
-   
-   
+    passada = lastDebounceTime - startTemp;
+    startTemp = lastDebounceTime;
 
+    Serial.print("Tempo(D): ");
+    Serial.print(passada);
     
     
     
-    
-    Serial.print("Passos: ");
+    Serial.print("Passos(D): ");
     Serial.print(steps);
-
-    if (steps!=10 & steps!=13 ) 
-        {   
-         
-
-             
-             
-        }
     
-    Serial.print("\n");
+    int finalPassada= passada/10/10;
+    Serial.print(" Passada a ser enviada(D): ");
+    Serial.println(finalPassada);
+
+
+
+    char bufToSend[40];
+    String string = (String)"p"+(String)"D"+(String)"t"+finalPassada+(String)"l"+60;
+    string.toCharArray(bufToSend,40);
+   
+    BTserial.write(bufToSend);
+    
+    
     delay(350);
  }
   
