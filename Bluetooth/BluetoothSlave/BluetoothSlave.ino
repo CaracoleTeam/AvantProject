@@ -1,43 +1,12 @@
-    /////////////////////////////////////////////////////////////////
-   //         Arduino Bluetooth Weather Station v1.01             //
-  //       Get the latest version of the code here:              //
- //   http://educ8s.tv/arduino-two-way-bluetooth-communication  //
-/////////////////////////////////////////////////////////////////
+#include <SoftwareSerial.h>
 
-#include <EasyTransfer.h> //https://github.com/madsci1016/Arduino-EasyTransfer
+SoftwareSerial COM(9,10);
 
-
-struct SEND_DATA_STRUCTURE
-{
-  float temperature ;
-  float humidity ;
-};
-
-
-int counter = 0;
-
-SEND_DATA_STRUCTURE data;
-
-
-EasyTransfer  ETout; //We need two EasyTransfer object, one for the data we send, and one for the data we receive.
-
-void setup() {
-  Serial.begin(9600); //Baudrate of the Bluetooth modules
-  
-  ETout.begin(details(data), &Serial);
-  
+void setup(){
+  COM.begin(9600);
 }
 
-void loop() {
-  
-  counter ++;
-  if(counter == 8)//Send data once every two seconds
-  {
-   data.temperature = 2.0;
-   data.humidity =5.0;
-   ETout.sendData();
-   counter = 0;
-  }
-  delay(250);
-  
+void loop(){
+  COM.write('1');
+  delay(1000);
 }
