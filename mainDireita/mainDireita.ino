@@ -9,7 +9,7 @@ typedef struct passo{
 
 SoftwareSerial COM(10,11);
 AltSoftSerial BTserial; 
-
+  
 
 //Variables
 int acc_error=0;                         //We use this variable to only calculate once the Acc data error
@@ -24,7 +24,9 @@ int passada = 0;
 
 void setup() {
   Wire.begin();                           //begin the wire comunication
-  
+  pinMode(A0, OUTPUT);
+
+    
   Wire.beginTransmission(0x68);           //begin, Send the slave adress (in this case 68)              
   Wire.write(0x6B);                       //make the reset (place a 0 into the 6B register)
   Wire.write(0x00);
@@ -76,7 +78,29 @@ void setup() {
 int steps = 0 ;
 bool dandoPassada = false;
 long int    startTemp = 0;
+
+
 void loop() {
+  digitalWrite(A0, LOW);
+  
+  if(COM.available()>0){
+
+      char bufToSend[40];
+      String receivedString = COM.readStringUntil('\n');
+      receivedString.toCharArray(bufToSend,40);
+      
+      BTserial.write(bufToSend);
+
+    
+      Serial.println(receivedString);
+  
+    
+    
+   }else{
+      
+   }
+
+ 
   //////////////////////////////////////Acc read/////////////////////////////////////
 
   Wire.beginTransmission(0x68);     //begin, Send the slave adress (in this case 68) 
@@ -123,19 +147,13 @@ void loop() {
   dandoPassada = false;
  }
 
- int leftNumberOfBytes = COM.available();
- if(leftNumberOfBytes==8){
-  char data[leftNumberOfBytes];
-  for(int i = 0; i <leftNumberOfBytes;i++){
-    data[i] = COM.read();
-  }
-    Serial.println(data);
+ 
+ 
+ 
 
-    
-    BTserial.write(data);
-    delay(350);
-  }
-
+ 
+ 
+  
   
  if((Acc_rawZ >0.9) ){
     steps++;
@@ -159,7 +177,7 @@ void loop() {
     char bufToSend[40];
     String string = (String)"p"+(String)"D"+(String)"t"+finalPassada+(String)"l"+60;
     string.toCharArray(bufToSend,40);
-   
+    
     BTserial.write(bufToSend);
     
     

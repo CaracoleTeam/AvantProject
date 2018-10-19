@@ -139,16 +139,19 @@ void loop() {
    
 
      
-     char bufToSend[40];
-    String string = (String)"p"+(String)"E"+(String)"t"+finalPassada+(String)"l"+60 ;
-    string.toCharArray(bufToSend,40);
-    Serial.print(bufToSend);
-    COM.write(bufToSend);
+     
+    String stringBuffer = (String)"p"+(String)"E"+(String)"t"+finalPassada+(String)"l"+60 ;
+    char bufToSend[stringBuffer.length()+1];
+    stringBuffer.toCharArray(bufToSend,stringBuffer.length()+1);
+    Serial.println(bufToSend);
+    int dataLength = COM.write(bufToSend);
+    COM.write("\n");
+    Serial.println(dataLength);
     
     delay(350);
  }
   
- 
+  
  
  
  //Serial.print("   |   ");
