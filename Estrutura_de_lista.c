@@ -1,4 +1,4 @@
-// Ainda não está completa.
+// Completa!
 
 #include <stdio.h>
 #include <stdlib.h>
