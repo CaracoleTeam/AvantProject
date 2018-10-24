@@ -5,7 +5,8 @@
 #include <string.h>
 
 struct Node{
-    int num;
+    float num;
+    char passo[];
     struct Node *prox;
 };
 
@@ -235,4 +236,60 @@ void insere(node *LISTA)
                 }
         }else
         printf("Elemento invaldo\n\n");
+}
+
+node *retiraInicio (node *LISTA)
+{
+    if(LISTA->prox == NULL){
+        printf("Lista já está vazia\n\n");
+        return NULL;
+    }else{
+        node *tmp = LISTA->prox;
+        LISTA->prox = tmp->prox;
+        tam--;
+        return tmp;
+    }
+}
+
+node *retiraFim(node *LISTA)
+{
+    if(LISTA->prox == NULL){
+        printf("Lista já vazia\n\n");
+        return NULL;
+    }else{
+        node *ultimo = LISTA->prox,
+            *penultimo = ultimo;
+            ultimo = ultimo->prox;
+    }
+    penultimo->prox = NULL;
+    tam--;
+    return ultimo;
+    }
+}
+
+node *retira(node *LISTA)
+{
+    int opt,count;
+    printf("que posição,[de 1 até %d] você deseja retirar: ",tam);
+    scanf("%d"&opt);
+
+    if(opt > 0 && opt <= tam){
+        if (opt==1)
+            return retiraInicio(LISTA);
+        else{
+            node *atual = LISTA->prox,
+                        *anterior=LISTA;
+
+                    for(count = 1; count < opt ; count++){
+                        anterior = atual;
+                        atual = atual->prox;
+                    }
+            anterior->prox
+            tam--;
+            return atual;
+        }
+    }else{
+        printf("Elemento invalido\n\n");
+        return NULL;
+    }
 }
