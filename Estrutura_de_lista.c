@@ -28,7 +28,7 @@ node *retiraFim(node *LISTA);
 node *retira(node *LISTA);
 
 int main(void){
-    node *LISTA = (node *)malloc(size(node));
+    node *LISTA = (node *)malloc(sizeof(node));
     if(!LISTA){
         printf("Escreve oque tu quiser aqui JV");
         exit(1);
