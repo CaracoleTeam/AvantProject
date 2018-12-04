@@ -1,16 +1,10 @@
-
-  #include <AltSoftSerial.h>
+#include <AltSoftSerial.h>
 #include <Wire.h>
 #include <SoftwareSerial.h>
 
-typedef struct passo{
-    int stepTime;
-    int stepLenght;
-}Passo;
+SoftwareSerial COM(9,10);
 
-SoftwareSerial COM(10,11);
-AltSoftSerial BTserial; 
-  
+
 
 //Variables
 int acc_error=0;                         //We use this variable to only calculate once the Acc data error
@@ -25,8 +19,7 @@ int passada = 0;
 
 void setup() {
   Wire.begin();                           //begin the wire comunication
-  
-  
+  COM.begin(9600);
   Wire.beginTransmission(0x68);           //begin, Send the slave adress (in this case 68)              
   Wire.write(0x6B);                       //make the reset (place a 0 into the 6B register)
   Wire.write(0x00);
@@ -39,7 +32,7 @@ void setup() {
 
   Serial.begin(9600);                     //Remember to set this same baud rate to the serial monitor  
 
-  BTserial.begin(9600);
+  
 
 /*Here we calculate the acc data error before we start the loop
  * I make the mean of 200 values, that should be enough*/
@@ -51,12 +44,12 @@ void setup() {
       Wire.write(0x3B);                       //Ask for the 0x3B register- correspond to AcX
       Wire.endTransmission(false);
       Wire.requestFrom(0x68,6,true); 
-      COM.begin(9600); 
+      
       Acc_rawX=(Wire.read()<<8|Wire.read())/4096.0 ; //each value needs two registres
       Acc_rawY=(Wire.read()<<8|Wire.read())/4096.0 ;
       Acc_rawZ=(Wire.read()<<8|Wire.read())/4096.0 ;
 
-      
+       
       /*---X---*/
       Acc_angle_error_x = Acc_angle_error_x + ((atan((Acc_rawY)/sqrt(pow((Acc_rawX),2) + pow((Acc_rawZ),2)))*rad_to_deg));
       /*---Y---*/
@@ -73,35 +66,12 @@ void setup() {
 }//end of setup void
 
 
+
+
 int steps = 0 ;
 bool dandoPassada = false;
 long int    startTemp = 0;
-
-
 void loop() {
-  
-  
-
-  
-  if(COM.available()>0){
-      Serial.println("chegou");
-      char bufToSend[40];
-      String receivedString = COM.readStringUntil('\n');
-      receivedString.toCharArray(bufToSend,40);
-      
-      Serial.println(bufToSend);
-      BTserial.write(bufToSend);
-
-    
-      
-  
-    
-    
-   }else{
-      
-   }
-
- 
   //////////////////////////////////////Acc read/////////////////////////////////////
 
   Wire.beginTransmission(0x68);     //begin, Send the slave adress (in this case 68) 
@@ -124,68 +94,19 @@ void loop() {
  Acc_angle_x = (atan((Acc_rawY)/sqrt(pow((Acc_rawX),2) + pow((Acc_rawZ),2)))*rad_to_deg) - Acc_angle_error_x;
  /*---Y---*/
  Acc_angle_y = (atan(-1*(Acc_rawX)/sqrt(pow((Acc_rawY),2) + pow((Acc_rawZ),2)))*rad_to_deg) - Acc_angle_error_y;    
- /*Uncoment the rest of the serial prines
- * I only print the Y raw acceleration value */
- //Serial.print("AccX raw: ");
- //Serial.print(Acc_rawX);
- //Serial.print("   |   ");
- //Serial.print("AccY raw: ");
- //Serial.print(Acc_rawY);
- //Serial.print("   |   ");
- //Serial.print("AccZ raw: ");
-
-  long int    lastDebounceTime = millis();
+ 
   
   
-  if((lastDebounceTime - startTemp) > 10000){
-        startTemp = lastDebounceTime;
-        
-    }
- 
- if(Acc_rawZ>0){
-  dandoPassada = true;
- }else{
-  dandoPassada = false;
- }
-
- 
- 
  
 
- 
- 
-  Serial.println(Acc_rawZ);
+  String stringBuffer = (String)"Acc_rawX"+(String)Acc_rawX+(String)"Acc_rawY"+(String)Acc_rawY+(String)"Acc_rawZ"+(String)Acc_rawZ;
+  char bufToSend[stringBuffer.length()+1];
+  stringBuffer.toCharArray(bufToSend,stringBuffer.length()+1);
+  Serial.println(bufToSend);
+  int dataLength = COM.write(bufToSend);
+  COM.write("\n");
   
- if((Acc_rawX < -0.9) ){
-    steps++;
-    passada = lastDebounceTime - startTemp;
-    startTemp = lastDebounceTime;
-
-    Serial.print("Tempo(D): ");
-    Serial.print(passada);
-    
-    
-    
-    Serial.print("Passos(D): ");
-    Serial.print(steps);
-    
-    int finalPassada= passada/10/10;
-    Serial.print(" Passada a ser enviada(D): ");
-    Serial.println(finalPassada);
-
-
-
-    char bufToSend[40];
-    String string = (String)"p"+(String)"D"+(String)"t"+finalPassada+(String)"l"+60;
-    string.toCharArray(bufToSend,40);
-    
-    BTserial.write(bufToSend);
-    
-    
-    delay(350);
- }
   
- 
  
  
  //Serial.print("   |   ");
